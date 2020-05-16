@@ -618,7 +618,7 @@ GetString(Parser_t *ap, uint32_t id)
 		chNum = *(uint8_t *)(offset+1);
 		ap->st->strings[id] = (unsigned char *)malloc(chNum);
 		memcpy(ap->st->strings[id], offset+2, chNum);
-//		ap->st->strings[id][chNum] = 0;
+		ap->st->strings[id][chNum] = 0;
 	} else {
 		chNum = *(uint16_t *)offset;
 		size = UTF16LEtoUTF8(NULL, offset+2, (size_t)chNum);
