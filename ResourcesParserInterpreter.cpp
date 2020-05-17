@@ -78,34 +78,19 @@ void ResourcesParserInterpreter::parserEntry(
 		ResTable_map_entry* pMapEntry = (ResTable_map_entry*)pEntry;
 		ResTable_map* pMap = (ResTable_map*)pValue;
 		if(pMapEntry->parent.ident!= 0) {
-			cout <<tab+"\t" <<"parent: " <<mParser->getNameForId(pMapEntry->parent.ident) <<endl;
+			cout <<tab <<"parent: " <<mParser->getNameForId(pMapEntry->parent.ident) <<endl;
 		}
 
 		for(int i = 0 ; i < pMapEntry->count ; i++) {
-			string name = mParser->getNameForResTableMap((pMap+i)->name);
-
-			uint32_t ident = (pMap+i)->name.ident;
-
-			if(!ResourcesParser::isTableMapForAttrDesc((pMap+i)->name)){
 				cout
-					<<tab+"\t\t" <<name
-					<<"(" <<*dec <<ident <<" or 0x" <<hex <<ident <<") = "
+					<<tab
 					<<mParser->stringOfValue(&(pMap+i)->value)
 					<<endl;
-			} else {
-				cout <<tab+"\t" <<name
-					<<"(" <<*dec <<ident <<" or 0x" <<hex <<ident <<") "
-					<<mParser->getValueTypeForResTableMap((pMap+i)->value)
-					<<endl;
-			}
 		}
 	}else{
-		if(ID_TYPE == type) {
-			cout <<tab+"\t" <<key <<" (" <<*dec <<resId <<" or 0x" <<hex <<resId <<")"<<endl;
-		} else {
+		if(ID_TYPE != type) {
 			string value = mParser->stringOfValue(pValue);
-			cout <<tab+"\t" <<key <<" (" <<*dec <<resId <<" or 0x" <<hex <<resId <<")"
-				<<" = " <<value <<endl;
+			cout <<tab <<key<<" = " <<value <<endl;
 		}
 	}
 }
