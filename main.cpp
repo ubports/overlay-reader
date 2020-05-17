@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
 	const char* path = getArgv("-p", argv, argc);
 	const char* type = getArgv("-t", argv, argc);
 	const char* id = getArgv("-i", argv, argc);
+	const char* name = getArgv("-n", argv, argc);
 	int all = findArgvIndex("-a", argv, argc);
 
 	if(nullptr == path) {
@@ -36,6 +37,10 @@ int main(int argc, char *argv[]) {
 
 	if(id) {
 		interpreter.parserId(id);
+	}
+
+	if (name) {
+		interpreter.parserName(name);
 	}
 	return 0;
 }
@@ -63,4 +68,5 @@ void printHelp() {
 	cout <<"-a : show all of resources.arsc" <<endl;
 	cout <<"-t : select the type in resources.arsc to show" <<endl;
 	cout <<"-i : select the id of resource to show" <<endl;
+	cout <<"-n : select the name of resource to show" << endl;
 }

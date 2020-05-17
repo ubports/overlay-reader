@@ -121,3 +121,64 @@ void ResourcesParserInterpreter::parserId(const string& id) {
 		}
 	}
 }
+
+void ResourcesParserInterpreter::findResource(
+	ResourcesParser::PackageResourcePtr packageRes,
+	uint32_t typeId,
+	const string &type,
+	const string &name)
+{
+	for (ResourcesParser::ResTableTypePtr pResTableType : packageRes->resTablePtrs[typeId])
+	{
+		for (int i = 0; i < pResTableType->entries.size(); i++)
+		{
+			if (pResTableType->entries[i] == nullptr)
+				continue;
+			
+			auto pEntry = pResTableType->entries[i];
+			auto keys = packageRes->pKeys;
+			uint32_t resId = MAKE_RESOURCE_ID(packageRes->header.id, typeId, i);
+			Res_value * pValue = pResTableType->values[i];
+		
+			string key = ResourcesParser::getStringFromResStringPool(keys, pEntry->key.index);
+			if (key == name){
+				cout << "type: " << type << endl;
+				cout << "subtype: " << pResTableType->header.config.toString() << endl;
+				if (pEntry->flags & ResTable_entry::FLAG_COMPLEX)
+				{
+					cout << key << endl;
+					ResTable_map_entry *pMapEntry = (ResTable_map_entry *)pEntry;
+					ResTable_map *pMap = (ResTable_map *)pValue;
+					/*if (pMapEntry->parent.ident != 0)
+						cout << "parent: " << mParser->getNameForId(pMapEntry->parent.ident) << endl;*/
+
+					for (int i = 0; i < pMapEntry->count; i++)
+					{
+						cout << mParser->stringOfValue(&(pMap + i)->value) << endl;
+					}
+				}
+				else
+				{
+					if (ID_TYPE != type)
+					{
+						string value = mParser->stringOfValue(pValue);
+						cout << key << " = " << value << endl;
+					}
+				}
+				return;
+			}
+		}
+	}
+}
+
+void ResourcesParserInterpreter::parserName(const string& name) {
+	for (auto it : mParser->getResourceForPackageName())
+	{
+		ResourcesParser::ResStringPoolPtr types = it.second->pTypes;
+		for (uint32_t i = 0; i < types->header.stringCount; i++)
+		{
+			string resType = ResourcesParser::getStringFromResStringPool(types, i);
+			findResource(it.second, ID(i), resType, name);
+		}
+	}
+}
