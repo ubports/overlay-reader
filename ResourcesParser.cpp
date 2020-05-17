@@ -87,20 +87,50 @@ inline static string toUtf8(const u16string& str16) {
 		.to_bytes(str16);
 }
 
-ResourcesParser::ResourcesParser(const string& filePath) {
-	ifstream resources(filePath, ios::in|ios::binary);
+ResourcesParser::ResourcesParser()
+{
+}
 
+void ResourcesParser::SetResourcesBin(FILE *bfile)
+{
+	mBinResources = bfile;
+	mIsZip = false;
+}
+
+void ResourcesParser::SetResourcesZip(zip_file *zfile)
+{
+	mZipResources = zfile;
+	mIsZip = true;
+}
+
+int ResourcesParser::ReadResources(char *buffer, size_t size)
+{
+	if (mIsZip)
+		return zip_fread(mZipResources, buffer, size);
+	else
+		return fread(buffer, sizeof(char), size, mBinResources);
+}
+
+int ResourcesParser::SeekResources(long offset, int whence)
+{
+	if (mIsZip)
+		return zip_fseek(mZipResources, offset, whence);
+	else
+		return fseek(mBinResources, offset, whence);
+}
+
+void ResourcesParser::SetupResourcesParser() {
 	// resources文件开头是个ResTable_header,记录整个文件的信息
-	resources.read((char*)&mResourcesInfo, sizeof(ResTable_header));
+	ReadResources((char*)&mResourcesInfo, sizeof(ResTable_header));
 
 	// 紧接着就是全局字符串池
-	mGlobalStringPool = parserResStringPool(resources);
+	mGlobalStringPool = parserResStringPool();
 	if(mGlobalStringPool == nullptr) {
 		return;
 	}
 
 	for(int i = 0 ; i < mResourcesInfo.packageCount ; i++) {
-		PackageResourcePtr pResource = parserPackageResource(resources);
+		PackageResourcePtr pResource = parserPackageResource();
 		if(pResource == nullptr) {
 			return;
 		}
@@ -109,10 +139,9 @@ ResourcesParser::ResourcesParser(const string& filePath) {
 	}
 }
 
-ResourcesParser::ResStringPoolPtr ResourcesParser::parserResStringPool(
-		ifstream& resources) {
+ResourcesParser::ResStringPoolPtr ResourcesParser::parserResStringPool() {
 	ResStringPoolPtr pPool = make_shared<ResStringPool>();
-	resources.read((char*)&pPool->header, sizeof(ResStringPool_header));
+	ReadResources((char*)&pPool->header, sizeof(ResStringPool_header));
 	if(pPool->header.header.type != RES_STRING_POOL_TYPE) {
 		cout<<"parserResStringPool 需要定位到 RES_STRING_POOL_TYPE !"<<endl;
 		return nullptr;
@@ -124,13 +153,13 @@ ResourcesParser::ResStringPoolPtr ResourcesParser::parserResStringPool(
 	);
 
 	const uint32_t offsetSize = sizeof(uint32_t) * pPool->header.stringCount;
-	resources.read((char*)pPool->pOffsets.get(), offsetSize);
+	ReadResources((char*)pPool->pOffsets.get(), offsetSize);
 
 	// 跳到字符串数组开头位置
 	uint32_t seek = pPool->header.stringsStart
 		- pPool->header.header.headerSize
 		- offsetSize;
-	resources.seekg(seek, ios::cur);
+	SeekResources(seek, SEEK_CUR);
 
 	// 载入所有字符串
 	const uint32_t strBuffSize = pPool->header.styleCount > 0
@@ -140,14 +169,14 @@ ResourcesParser::ResStringPoolPtr ResourcesParser::parserResStringPool(
 			new byte[strBuffSize],
 			default_delete<byte[]>()
 	);
-	resources.read((char*)pPool->pStrings.get(), strBuffSize);
+	ReadResources((char*)pPool->pStrings.get(), strBuffSize);
 
 	// 跳出全局字符串池
 	if(pPool->header.styleCount > 0) {
 		seek = pPool->header.header.size
 			- pPool->header.stringsStart
 			- strBuffSize;
-		resources.seekg(seek, ios::cur);
+		SeekResources(seek, SEEK_CUR);
 	}
 
 	return pPool;
@@ -171,10 +200,9 @@ string ResourcesParser::getStringFromResStringPool(
 		: toUtf8((char16_t*) str);
 }
 
-ResourcesParser::PackageResourcePtr ResourcesParser::parserPackageResource(
-		ifstream& resources) {
+ResourcesParser::PackageResourcePtr ResourcesParser::parserPackageResource() {
 	PackageResourcePtr pPool = make_shared<PackageResource>();
-	resources.read((char*)&pPool->header, sizeof(ResTable_package));
+	ReadResources((char*)&pPool->header, sizeof(ResTable_package));
 
 	if(pPool->header.header.type != RES_TABLE_PACKAGE_TYPE) {
 		cout<<"parserPackageResource 需要定位到 RES_TABLE_PACKAGE_TYPE !"<<endl;
@@ -182,24 +210,23 @@ ResourcesParser::PackageResourcePtr ResourcesParser::parserPackageResource(
 	}
 
 	// 接着是资源类型字符串池
-	pPool->pTypes = parserResStringPool(resources);
+	pPool->pTypes = parserResStringPool();
 
 	// 接着是资源名称字符串池
-	pPool->pKeys = parserResStringPool(resources);
+	pPool->pKeys = parserResStringPool();
 
 	ResChunk_header chunkHeader;
-	while(resources.read((char*)&chunkHeader, sizeof(ResChunk_header))) {
-		resources.seekg(-sizeof(ResChunk_header), ios::cur);
+	while(ReadResources((char*)&chunkHeader, sizeof(ResChunk_header))) {
+		SeekResources(-sizeof(ResChunk_header), SEEK_CUR);
 
 		if(chunkHeader.type == RES_TABLE_PACKAGE_TYPE) {
 			return pPool;
 		} else if(chunkHeader.type == RES_TABLE_TYPE_TYPE) {
 			ResTableTypePtr pResTableType = make_shared<ResTableType>();
-			resources.read((char*)&pResTableType->header, sizeof(ResTable_type));
+			ReadResources((char*)&pResTableType->header, sizeof(ResTable_type));
 			uint32_t seek = pResTableType->header.header.headerSize - sizeof(ResTable_type);
-			resources.seekg(seek, ios::cur);
+			SeekResources(seek, SEEK_CUR);
 			pResTableType->entryPool = parserEntryPool(
-					resources,
 					pResTableType->header.entryCount,
 					pResTableType->header.entriesStart - pResTableType->header.header.headerSize,
 					pResTableType->header.header.size - pResTableType->header.entriesStart);
@@ -216,7 +243,7 @@ ResourcesParser::PackageResourcePtr ResourcesParser::parserPackageResource(
 				pResTableType->values.push_back(pValue);
 			}
 		} else {
-			resources.seekg(chunkHeader.size, ios::cur);
+			SeekResources(chunkHeader.size, SEEK_CUR);
 		}
 	}
 
@@ -224,7 +251,6 @@ ResourcesParser::PackageResourcePtr ResourcesParser::parserPackageResource(
 }
 
 ResourcesParser::EntryPool ResourcesParser::parserEntryPool(
-			ifstream& resources,
 			uint32_t entryCount,
 			uint32_t dataStart,
 			uint32_t dataSize) {
@@ -235,18 +261,18 @@ ResourcesParser::EntryPool ResourcesParser::parserEntryPool(
 	);
 
 	const uint32_t offsetSize = sizeof(uint32_t) * entryCount;
-	resources.read((char*)pool.pOffsets.get(), offsetSize);
+	ReadResources((char*)pool.pOffsets.get(), offsetSize);
 
 	pool.offsetCount = entryCount;
 	pool.dataSize = dataSize;
 
-	resources.seekg(dataStart - offsetSize, ios::cur);
+	SeekResources(dataStart - offsetSize, SEEK_CUR);
 
 	pool.pData = shared_ptr<byte>(
 			new byte[pool.dataSize],
 			default_delete<byte[]>()
 	);
-	resources.read((char*)pool.pData.get(), pool.dataSize);
+	ReadResources((char*)pool.pData.get(), pool.dataSize);
 	return pool;
 }
 

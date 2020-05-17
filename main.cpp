@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
 	const char* id = getArgv("-i", argv, argc);
 	const char* name = getArgv("-n", argv, argc);
 	int all = findArgvIndex("-a", argv, argc);
+	int apk = findArgvIndex("-s", argv, argc);
 
 	if(nullptr == path) {
 		printHelp();
@@ -24,7 +25,18 @@ int main(int argc, char *argv[]) {
 		printHelp();
 	}
 
-	ResourcesParser parser(path);
+	ResourcesParser parser;
+	int err = 0;
+	if (apk >= 0)
+	{
+		zip *z = zip_open(path, 0, &err);
+		zip_file *f = zip_fopen(z, "resources.arsc", 0);
+		parser.SetResourcesZip(f);
+	} else {
+		FILE *stream = fopen(path, "rb");
+		parser.SetResourcesBin(stream);
+	}
+	parser.SetupResourcesParser();
 	ResourcesParserInterpreter interpreter(&parser);
 
 	if(all >= 0) {
@@ -64,9 +76,10 @@ const char* getArgv(const char* argv, char *argvs[], int count) {
 
 void printHelp() {
 	cout <<"rp -p path [-a] [-t type] [-i id]" <<endl<<endl;
-	cout <<"-p : set path of resources.arsc" <<endl;
-	cout <<"-a : show all of resources.arsc" <<endl;
+	cout <<"-p : set path of resources.arsc or app.apk" <<endl;
+	cout <<"-a : show all resources" <<endl;
 	cout <<"-t : select the type in resources.arsc to show" <<endl;
 	cout <<"-i : select the id of resource to show" <<endl;
 	cout <<"-n : select the name of resource to show" << endl;
+	cout <<"-s : Input file is apk" << endl;
 }

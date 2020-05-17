@@ -10,6 +10,8 @@
 #include <fstream>
 #include <memory>
 
+#include <zip.h>
+
 #define TYPE_ID(X) ((X & 0x00FF0000) >> 16)
 #define ENTRY_ID(X) (X & 0xFFFF)
 
@@ -49,7 +51,11 @@ public:
 	typedef std::shared_ptr<PackageResource> PackageResourcePtr;
 
 public:
-	ResourcesParser(const std::string& filePath);
+	ResourcesParser();
+
+	void SetResourcesBin(FILE *bfile);
+	void SetResourcesZip(zip_file *zfile);
+	void SetupResourcesParser();
 
 	static std::string getStringFromResStringPool(ResStringPoolPtr pPool, uint32_t index);
 
@@ -73,6 +79,13 @@ public:
 	std::string stringOfValue(const Res_value* value) const;
 
 private:
+	zip_file *mZipResources;
+	FILE *mBinResources;
+	bool mIsZip = false;
+
+	int ReadResources(char *buffer, size_t size);
+	int SeekResources(long offset, int whence);
+
 	ResTable_header mResourcesInfo;
 	ResStringPoolPtr mGlobalStringPool;
 
@@ -80,12 +93,11 @@ private:
 	std::map<uint32_t, PackageResourcePtr> mResourceForId;
 	std::vector<ResTable_package> mPackageTables;
 
-	ResStringPoolPtr parserResStringPool(std::ifstream& resources);
+	ResStringPoolPtr parserResStringPool();
 
-	PackageResourcePtr parserPackageResource(std::ifstream& resources);
+	PackageResourcePtr parserPackageResource();
 
 	EntryPool parserEntryPool(
-			std::ifstream& resources,
 			uint32_t entryCount,
 			uint32_t dataStart,
 			uint32_t dataSize);

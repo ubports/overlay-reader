@@ -8,7 +8,7 @@ rp : \
 	ResourceTypes.cpp \
 	configuration.h \
 	ByteOrder.h
-	g++ main.cpp ResourcesParserInterpreter.cpp ResourcesParser.cpp ResourceTypes.cpp -std=c++11 -o rp
+	g++ -I/usr/local/lib/libzip/include -lzip main.cpp ResourcesParserInterpreter.cpp ResourcesParser.cpp ResourceTypes.cpp -std=c++11 -o rp
 
 .PHONY : clean
 clean :
