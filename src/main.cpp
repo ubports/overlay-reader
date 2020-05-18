@@ -1,5 +1,5 @@
-#include "ResourcesParser.h"
-#include "ResourcesParserInterpreter.h"
+#include "arcsParser/ResourcesParser.h"
+#include "arcsParser/ResourcesParserInterpreter.h"
 
 #include <iostream>
 #include <sstream>
