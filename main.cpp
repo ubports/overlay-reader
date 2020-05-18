@@ -84,7 +84,10 @@ std::string parserByName(ResourcesParserInterpreter interpreter,
 	const std::string &subtype, 
 	const std::string &default_value)
 {
-	return interpreter.parserName(name, subtype, default_value);
+	bool isfile = false;
+	string value = interpreter.parserName(name, subtype, default_value, isfile);
+	printf("isfile: %d\n", isfile);
+	return value;
 }
 
 int findArgvIndex(const char* argv, char *argvs[], int count) {

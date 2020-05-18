@@ -22,6 +22,7 @@ public:
 	static const std::string COLOR_TYPE;
 	static const std::string ID_TYPE;
 	static const std::string INTEGER_TYPE;
+	static const std::string RAW_TYPE;
 
 	ResourcesParserInterpreter(ResourcesParser* parser) : mParser(parser) {  }
 
@@ -34,7 +35,7 @@ public:
 
 	void parserId(const std::string& id);
 
-	std::string parserName(const std::string &name, const std::string &subtype, const std::string &default_value);
+	std::string parserName(const std::string &name, const std::string &subtype, const std::string &default_value, bool &isFile);
 
 private:
 	ResourcesParser* mParser;

@@ -21,6 +21,7 @@ const string ResourcesParserInterpreter::STYLE_TYPE = "style";
 const string ResourcesParserInterpreter::COLOR_TYPE = "color";
 const string ResourcesParserInterpreter::ID_TYPE = "id";
 const string ResourcesParserInterpreter::INTEGER_TYPE = "integer";
+const string ResourcesParserInterpreter::RAW_TYPE = "raw";
 
 void ResourcesParserInterpreter::parserResource(const string& type) {
 	for(auto it : mParser->getResourceForPackageName()) {
@@ -173,7 +174,7 @@ std::string ResourcesParserInterpreter::findResource(
 	return value;
 }
 
-string ResourcesParserInterpreter::parserName(const string &name, const string &subtype, const string &default_value)
+string ResourcesParserInterpreter::parserName(const string &name, const string &subtype, const string &default_value, bool &isFile)
 {
 	for (auto it : mParser->getResourceForPackageName())
 	{
@@ -182,8 +183,15 @@ string ResourcesParserInterpreter::parserName(const string &name, const string &
 		{
 			string resType = ResourcesParser::getStringFromResStringPool(types, i);
 			string value = findResource(it.second, ID(i), resType, name, subtype);
-			if (value != "")
+			if (value != "") {
+				isFile = (resType == XML_TYPE) ||
+						 (resType == DRAWABLE_TYPE) ||
+						 (resType == MIPMAP_TYPE) ||
+						 (resType == ANIMATOR_TYPE) ||
+					 	 (resType == ANIM_TYPE) ||
+						 (resType == RAW_TYPE);
 				return value;
+			}
 		}
 	}
 	return default_value;
