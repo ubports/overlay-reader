@@ -122,12 +122,14 @@ void ResourcesParserInterpreter::parserId(const string& id) {
 	}
 }
 
-void ResourcesParserInterpreter::findResource(
+std::string ResourcesParserInterpreter::findResource(
 	ResourcesParser::PackageResourcePtr packageRes,
 	uint32_t typeId,
 	const string &type,
-	const string &name)
+	const string &name,
+	const string &subtype)
 {
+	string value = "";
 	for (ResourcesParser::ResTableTypePtr pResTableType : packageRes->resTablePtrs[typeId])
 	{
 		for (int i = 0; i < pResTableType->entries.size(); i++)
@@ -141,12 +143,10 @@ void ResourcesParserInterpreter::findResource(
 			Res_value * pValue = pResTableType->values[i];
 		
 			string key = ResourcesParser::getStringFromResStringPool(keys, pEntry->key.index);
-			if (key == name){
-				cout << "type: " << type << endl;
-				cout << "subtype: " << pResTableType->header.config.toString() << endl;
+			if (key == name && subtype == pResTableType->header.config.toString())
+			{
 				if (pEntry->flags & ResTable_entry::FLAG_COMPLEX)
 				{
-					cout << key << endl;
 					ResTable_map_entry *pMapEntry = (ResTable_map_entry *)pEntry;
 					ResTable_map *pMap = (ResTable_map *)pValue;
 					/*if (pMapEntry->parent.ident != 0)
@@ -154,31 +154,37 @@ void ResourcesParserInterpreter::findResource(
 
 					for (int i = 0; i < pMapEntry->count; i++)
 					{
-						cout << mParser->stringOfValue(&(pMap + i)->value) << endl;
+						value += mParser->stringOfValueRaw(&(pMap + i)->value);
+						if (i < pMapEntry->count - 1)
+							value += ",";
 					}
 				}
 				else
 				{
 					if (ID_TYPE != type)
 					{
-						string value = mParser->stringOfValue(pValue);
-						cout << key << " = " << value << endl;
+						value = mParser->stringOfValueRaw(pValue);
 					}
 				}
-				return;
+				return value;
 			}
 		}
 	}
+	return value;
 }
 
-void ResourcesParserInterpreter::parserName(const string& name) {
+string ResourcesParserInterpreter::parserName(const string &name, const string &subtype, const string &default_value)
+{
 	for (auto it : mParser->getResourceForPackageName())
 	{
 		ResourcesParser::ResStringPoolPtr types = it.second->pTypes;
 		for (uint32_t i = 0; i < types->header.stringCount; i++)
 		{
 			string resType = ResourcesParser::getStringFromResStringPool(types, i);
-			findResource(it.second, ID(i), resType, name);
+			string value = findResource(it.second, ID(i), resType, name, subtype);
+			if (value != "")
+				return value;
 		}
 	}
+	return default_value;
 }

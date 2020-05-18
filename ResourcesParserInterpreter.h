@@ -34,7 +34,7 @@ public:
 
 	void parserId(const std::string& id);
 
-	void parserName(const std::string &name);
+	std::string parserName(const std::string &name, const std::string &subtype, const std::string &default_value);
 
 private:
 	ResourcesParser* mParser;
@@ -53,11 +53,12 @@ private:
 		const std::string& type,
 		const std::string& tab);
 
-	void findResource(
-		ResourcesParser::PackageResourcePtr packageRes, 
-		uint32_t typeId, 
-		const std::string &type, 
-		const std::string &name);
+	std::string findResource(
+		ResourcesParser::PackageResourcePtr packageRes,
+		uint32_t typeId,
+		const std::string &type,
+		const std::string &name,
+		const std::string &subtype);
 };
 
 #endif  /*RESOURCES_PARSER_INTERPRETER_H*/

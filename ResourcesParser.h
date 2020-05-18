@@ -78,6 +78,8 @@ public:
 
 	std::string stringOfValue(const Res_value* value) const;
 
+	std::string stringOfValueRaw(const Res_value* value) const;
+
 private:
 	zip_file *mZipResources;
 	FILE *mBinResources;

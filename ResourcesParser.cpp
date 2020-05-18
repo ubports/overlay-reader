@@ -82,6 +82,36 @@ string ResourcesParser::stringOfValue(const Res_value* value) const {
 	return ss.str();
 }
 
+string ResourcesParser::stringOfValueRaw(const Res_value* value) const {
+	stringstream ss;
+    if (value->dataType == Res_value::TYPE_NULL) {
+        ss<<"";
+    } else if (value->dataType == Res_value::TYPE_REFERENCE) {
+		ss<<getNameForId(value->data);
+    } else if (value->dataType == Res_value::TYPE_ATTRIBUTE) {
+		ss<<getNameForId(value->data);
+    } else if (value->dataType == Res_value::TYPE_STRING) {
+		ss<<getStringFromGlobalStringPool(value->data);
+    } else if (value->dataType == Res_value::TYPE_FLOAT) {
+        ss<<*(const float*)&value->data;
+    } else if (value->dataType == Res_value::TYPE_DIMENSION) {
+        ss<<stringOfComplex(value->data, false);
+    } else if (value->dataType == Res_value::TYPE_FRACTION) {
+        ss<<stringOfComplex(value->data, true);
+    } else if (value->dataType >= Res_value::TYPE_FIRST_COLOR_INT
+            && value->dataType <= Res_value::TYPE_LAST_COLOR_INT) {
+		ss<<"#"<<hex<<setw(8)<<setfill('0')<<value->data;
+    } else if (value->dataType == Res_value::TYPE_INT_BOOLEAN) {
+        ss<<(value->data ? "true" : "false");
+    } else if (value->dataType >= Res_value::TYPE_FIRST_INT
+            && value->dataType <= Res_value::TYPE_LAST_INT) {
+        ss<<value->data;
+    } else {
+		ss<<(int)value->data;
+    }
+	return ss.str();
+}
+
 inline static string toUtf8(const u16string& str16) {
 	return wstring_convert<codecvt_utf8_utf16<char16_t>,char16_t>()
 		.to_bytes(str16);

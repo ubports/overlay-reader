@@ -10,11 +10,21 @@ int findArgvIndex(const char* argv, char *argvs[], int count);
 const char* getArgv(const char* argv, char *argvs[], int count);
 void printHelp();
 
+std::string parserByName(ResourcesParserInterpreter interpreter, 
+	const std::string &name,  
+	const std::string &default_value);
+
+std::string parserByName(ResourcesParserInterpreter interpreter, 
+	const std::string &name, 
+	const std::string &subtype, 
+	const std::string &default_value);
+
 int main(int argc, char *argv[]) {
 	const char* path = getArgv("-p", argv, argc);
 	const char* type = getArgv("-t", argv, argc);
 	const char* id = getArgv("-i", argv, argc);
 	const char* name = getArgv("-n", argv, argc);
+	const char *subtype = getArgv("-q", argv, argc);
 	int all = findArgvIndex("-a", argv, argc);
 	int apk = findArgvIndex("-s", argv, argc);
 
@@ -52,9 +62,29 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (name) {
-		interpreter.parserName(name);
+		std::string value;
+		if(subtype)
+			value = parserByName(interpreter, name, subtype, "default");
+		else
+			value = parserByName(interpreter, name, "", "default");
+		printf("value: %s\n", value.c_str());
 	}
 	return 0;
+}
+
+std::string parserByName(ResourcesParserInterpreter interpreter, 
+	const std::string &name,  
+	const std::string &default_value)
+{
+	return parserByName(interpreter, name, "", default_value);
+}
+
+std::string parserByName(ResourcesParserInterpreter interpreter, 
+	const std::string &name, 
+	const std::string &subtype, 
+	const std::string &default_value)
+{
+	return interpreter.parserName(name, subtype, default_value);
 }
 
 int findArgvIndex(const char* argv, char *argvs[], int count) {
@@ -82,4 +112,5 @@ void printHelp() {
 	cout <<"-i : select the id of resource to show" <<endl;
 	cout <<"-n : select the name of resource to show" << endl;
 	cout <<"-s : Input file is apk" << endl;
+	cout <<"-q : Subtype of value" << endl;
 }
