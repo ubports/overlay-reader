@@ -1,13 +1,9 @@
 add_subdirectory(arcsParser)
 add_subdirectory(axmlParser)
 
-set(SERVICE_SRC
-    main.cpp
+add_library(overlay-reader SHARED
     overlay-reader.cpp
-)
-
-add_executable(overlay-reader
-    ${SERVICE_SRC} 
+    overlay-reader.h
 )
 
 target_link_libraries(overlay-reader
@@ -17,4 +13,12 @@ target_link_libraries(overlay-reader
     ${Boost_LIBRARIES}
 )
 
-install(TARGETS overlay-reader RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+add_executable(getoverlay
+    main.cpp
+)
+
+target_link_libraries(getoverlay
+    overlay-reader
+)
+
+install(TARGETS getoverlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

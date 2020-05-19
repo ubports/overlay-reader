@@ -19,9 +19,8 @@
 #ifndef OVERLAY_READER_H
 #define OVERLAY_READER_H
 
-#include "arcsParser/ResourcesParser.h"
-#include "arcsParser/ResourcesParserInterpreter.h"
-#include "axmlParser/AxmlParser.h"
+#include <iostream>
+#include <sstream>
 
 namespace overlayreader {
 

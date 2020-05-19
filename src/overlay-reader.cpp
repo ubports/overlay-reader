@@ -16,10 +16,11 @@
  * Author: Erfan Abdi <erfangplus@gmail.com>
  */
 
-#include "overlay-reader.h"
+#include <overlay-reader.h>
+#include <arcsParser/ResourcesParser.h>
+#include <arcsParser/ResourcesParserInterpreter.h>
+#include <axmlParser/AxmlParser.h>
 
-#include <iostream>
-#include <sstream>
 #include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
