@@ -11,7 +11,8 @@ include(GNUInstallDirs)
 pkg_check_modules(ZIP REQUIRED libzip)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fPIC")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
 include_directories(
     src
