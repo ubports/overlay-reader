@@ -9,12 +9,13 @@ include(FindPkgConfig)
 include(GNUInstallDirs)
 
 pkg_check_modules(ZIP REQUIRED libzip)
+find_package(Boost COMPONENTS filesystem REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 include_directories(
     src
+    ${Boost_INCLUDE_DIRS}
 )
 
 add_subdirectory(src)
-#add_subdirectory(tools)

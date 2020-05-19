@@ -1,93 +1,44 @@
-#include "arcsParser/ResourcesParser.h"
-#include "arcsParser/ResourcesParserInterpreter.h"
+#include "overlay-reader.h"
 
 #include <iostream>
 #include <sstream>
 
 using namespace std;
 
-int findArgvIndex(const char* argv, char *argvs[], int count);
+int findArgvIndex(const char *argv, char *argvs[], int count);
 const char* getArgv(const char* argv, char *argvs[], int count);
-void printHelp();
-
-std::string parserByName(ResourcesParserInterpreter interpreter, 
-	const std::string &name,  
-	const std::string &default_value);
-
-std::string parserByName(ResourcesParserInterpreter interpreter, 
-	const std::string &name, 
-	const std::string &subtype, 
-	const std::string &default_value);
+void printHelp(const char *self_name);
 
 int main(int argc, char *argv[]) {
 	const char* path = getArgv("-p", argv, argc);
-	const char* type = getArgv("-t", argv, argc);
-	const char* id = getArgv("-i", argv, argc);
-	const char* name = getArgv("-n", argv, argc);
-	const char *subtype = getArgv("-q", argv, argc);
-	int all = findArgvIndex("-a", argv, argc);
-	int apk = findArgvIndex("-s", argv, argc);
+	const char* target = getArgv("-t", argv, argc);
+	const char* config = getArgv("-c", argv, argc);
+	const char* subtype = getArgv("-s", argv, argc);
+	std::string ret;
 
-	if(nullptr == path) {
-		printHelp();
-		return -1;
-	} else if(getArgv("-h", argv, argc) != nullptr) {
-		printHelp();
-	}
-
-	ResourcesParser parser;
-	int err = 0;
-	if (apk >= 0)
+	if (!path && !target)
 	{
-		zip *z = zip_open(path, 0, &err);
-		zip_file *f = zip_fopen(z, "resources.arsc", 0);
-		parser.SetResourcesZip(f);
-	} else {
-		FILE *stream = fopen(path, "rb");
-		parser.SetResourcesBin(stream);
+		printHelp(argv[0]);
+		return -1;
 	}
-	parser.SetupResourcesParser();
-	ResourcesParserInterpreter interpreter(&parser);
+	else if (getArgv("-h", argv, argc) != nullptr)
+	{
+		printHelp(argv[0]);
+	}
+	if (!config) {
+		printHelp(argv[0]);
+		return -1;
+	}
+    if (!subtype)
+        subtype = "";
 
-	if(all >= 0) {
-		interpreter.parserResource(ResourcesParserInterpreter::ALL_TYPE);
-	}
+	if (target)
+		ret = overlayreader::GetConfigByTarget(target, config, subtype, "Faild to get value");
+	else if (path)
+		ret = overlayreader::GetConfigByPath(path, config, subtype, "Faild to get value");
 
-	if(type) {
-		interpreter.parserResource(type);
-	}
-
-	if(id) {
-		interpreter.parserId(id);
-	}
-
-	if (name) {
-		std::string value;
-		if(subtype)
-			value = parserByName(interpreter, name, subtype, "default");
-		else
-			value = parserByName(interpreter, name, "", "default");
-		printf("value: %s\n", value.c_str());
-	}
+	printf("%s\n", ret.c_str());
 	return 0;
-}
-
-std::string parserByName(ResourcesParserInterpreter interpreter, 
-	const std::string &name,  
-	const std::string &default_value)
-{
-	return parserByName(interpreter, name, "", default_value);
-}
-
-std::string parserByName(ResourcesParserInterpreter interpreter, 
-	const std::string &name, 
-	const std::string &subtype, 
-	const std::string &default_value)
-{
-	bool isfile = false;
-	string value = interpreter.parserName(name, subtype, default_value, isfile);
-	printf("isfile: %d\n", isfile);
-	return value;
 }
 
 int findArgvIndex(const char* argv, char *argvs[], int count) {
@@ -107,13 +58,10 @@ const char* getArgv(const char* argv, char *argvs[], int count) {
 	return nullptr;
 }
 
-void printHelp() {
-	cout <<"rp -p path [-a] [-t type] [-i id]" <<endl<<endl;
-	cout <<"-p : set path of resources.arsc or app.apk" <<endl;
-	cout <<"-a : show all resources" <<endl;
-	cout <<"-t : select the type in resources.arsc to show" <<endl;
-	cout <<"-i : select the id of resource to show" <<endl;
-	cout <<"-n : select the name of resource to show" << endl;
-	cout <<"-s : Input file is apk" << endl;
-	cout <<"-q : Subtype of value" << endl;
+void printHelp(const char* self_name) {
+	cout <<self_name<<" <-p path or -t target> <-c config> [-s subtype]" <<endl<<endl;
+	cout <<"-p : Set path of overlay.apk" <<endl;
+	cout <<"-t : Select overlay package target (value of android:targetPackage in rro manifest)" <<endl;
+	cout <<"-c : Select the config to show" << endl;
+	cout <<"-s : Input sub type of config (like mcc310-mnc580)" << endl;
 }
