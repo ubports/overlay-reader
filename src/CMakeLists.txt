@@ -22,4 +22,4 @@ target_link_libraries(getoverlay
 
 install(TARGETS overlay-reader LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(TARGETS getoverlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/overlay-reader.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/overlay-reader)
+install(FILES overlay-reader.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/overlay-reader)
