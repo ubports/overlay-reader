@@ -113,10 +113,21 @@ std::string GetConfigByPath(const std::string &path,
 		zip_close(rro_apk);
 		return value;
 	}
-	parser.SetResourcesZip(rro_arsc);
+	struct zip_stat arsc_st;
+	zip_stat_init(&arsc_st);
+	zip_stat(rro_apk, "resources.arsc", 0, &arsc_st);
+
+	char *arsc_raw = new char[arsc_st.size];
+	zip_fread(rro_arsc, arsc_raw, arsc_st.size);
+	FILE *arsc_tmp = tmpfile();
+	fwrite(arsc_raw, sizeof(char), arsc_st.size, arsc_tmp);
+	fseek(arsc_tmp, 0, SEEK_SET);
+	zip_fclose(rro_arsc);
+
+	parser.SetResourcesBin(arsc_tmp);
 	parser.SetupResourcesParser();
 	ResourcesParserInterpreter interpreter(&parser);
-	zip_fclose(rro_arsc);
+	fclose(arsc_tmp);
 
 	value = interpreter.parserName(config, subtype, default_value, isfile);
 	if (isfile)
