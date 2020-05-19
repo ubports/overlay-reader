@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${exec_prefix}/include
+
+Name: @CMAKE_PROJECT_NAME@
+Description: Library to read android runtime overlays
+Version: 0.1.0
+Libs: -L${libdir} -loverlay-reader
+Cflags: -I${includedir}
