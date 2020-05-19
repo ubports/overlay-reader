@@ -3,7 +3,6 @@ add_subdirectory(axmlParser)
 
 add_library(overlay-reader SHARED
     overlay-reader.cpp
-    overlay-reader.h
 )
 
 target_link_libraries(overlay-reader
@@ -21,4 +20,6 @@ target_link_libraries(getoverlay
     overlay-reader
 )
 
+install(TARGETS overlay-reader LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(TARGETS getoverlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/overlay-reader.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/overlay-reader)

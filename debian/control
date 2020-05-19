@@ -1,0 +1,41 @@
+Source: overlay-reader
+Section: libs
+Priority: optional
+Build-Depends: cmake (>= 2.8.10),
+               debhelper (>= 9),
+               pkg-config,
+               libboost-filesystem-dev,
+               libzip-dev
+Maintainer: Marius Gripsgard <marius@ubports.com>
+Standards-Version: 3.9.5
+Homepage: https://github.com/erfanoabdi/overlay-reader
+
+Package: liboverlay-reader
+Section: libs
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+Description: Library to read android runtime overlays 
+ Library to read android runtime overlays.
+
+Package: liboverlay-reader-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: liboverlay-reader (= ${binary:Version}),
+         ${misc:Depends},
+         ${shlibs:Depends},
+Description: Library to read android runtime overlays.
+ Library to read android runtime overlays.
+ .
+ This package includes all the development headers and libraries for
+ overlay-reader.
+
+Package: getoverlay
+Section: admin
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         liboverlay-reader,
+Description: Tools to read android runtime overlays.
+ Tools to read android runtime overlays. 
