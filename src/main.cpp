@@ -1,5 +1,6 @@
 #include <overlay-reader.h>
 
+#include <string.h>
 #include <iostream>
 #include <sstream>
 
