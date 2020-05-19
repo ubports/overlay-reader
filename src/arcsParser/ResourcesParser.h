@@ -54,7 +54,7 @@ public:
 	ResourcesParser();
 
 	void SetResourcesBin(FILE *bfile);
-	void SetResourcesZip(zip_file *zfile);
+	void SetResourcesZip(zip_source *zfile);
 	void SetupResourcesParser();
 
 	static std::string getStringFromResStringPool(ResStringPoolPtr pPool, uint32_t index);
@@ -81,7 +81,7 @@ public:
 	std::string stringOfValueRaw(const Res_value* value) const;
 
 private:
-	zip_file *mZipResources;
+	zip_source *mZipResources;
 	FILE *mBinResources;
 	bool mIsZip = false;
 

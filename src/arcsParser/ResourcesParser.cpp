@@ -127,7 +127,7 @@ void ResourcesParser::SetResourcesBin(FILE *bfile)
 	mIsZip = false;
 }
 
-void ResourcesParser::SetResourcesZip(zip_file *zfile)
+void ResourcesParser::SetResourcesZip(zip_source *zfile)
 {
 	mZipResources = zfile;
 	mIsZip = true;
@@ -136,7 +136,7 @@ void ResourcesParser::SetResourcesZip(zip_file *zfile)
 int ResourcesParser::ReadResources(char *buffer, size_t size)
 {
 	if (mIsZip)
-		return zip_fread(mZipResources, buffer, size);
+		return zip_source_read(mZipResources, buffer, size);
 	else
 		return fread(buffer, sizeof(char), size, mBinResources);
 }
@@ -144,7 +144,7 @@ int ResourcesParser::ReadResources(char *buffer, size_t size)
 int ResourcesParser::SeekResources(long offset, int whence)
 {
 	if (mIsZip)
-		return zip_fseek(mZipResources, offset, whence);
+		return zip_source_seek(mZipResources, offset, whence);
 	else
 		return fseek(mBinResources, offset, whence);
 }
