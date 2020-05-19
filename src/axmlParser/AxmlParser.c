@@ -395,8 +395,10 @@ AxmlNext(void *axml)
 	if(NoMoreData(ap))
 		event = AE_ENDDOC;
 
-	if(event == AE_ENDDOC)
-		return event;
+	if(event == AE_ENDDOC) {
+		event = -1;
+		return AE_ENDDOC;
+	}
 
 	/* common chunk head */
 	chunkType = GetInt32(ap);
