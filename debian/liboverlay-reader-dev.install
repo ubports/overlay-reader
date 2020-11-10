@@ -1,2 +1,3 @@
 usr/include/overlay-reader/*
 usr/lib/*/pkgconfig/*
+usr/lib/*/liboverlay-reader.so

@@ -12,6 +12,14 @@ target_link_libraries(overlay-reader
     ${Boost_LIBRARIES}
 )
 
+set_target_properties(
+    overlay-reader
+
+    PROPERTIES
+    VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+    SOVERSION ${VERSION_MAJOR}
+)
+
 add_executable(getoverlay
     main.cpp
 )
